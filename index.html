@@ -28,19 +28,16 @@ header{background:var(--text);color:#f5f3ee;padding:0 32px;display:flex;align-it
 
 .wrap{max-width:1160px;margin:0 auto;padding:24px 28px;display:grid;grid-template-columns:250px 1fr;gap:24px;align-items:start}
 
-/* 패널 */
 .panel{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:12px}
 .pt{font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;display:flex;align-items:center;gap:6px}
 .pt::after{content:'';flex:1;height:1px;background:var(--border)}
 
-/* 통계 */
 .stat-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)}
 .stat-row:last-child{border-bottom:none}
 .sn{font-size:12px;color:var(--text2)}
 .sv{font-family:var(--mono);font-size:18px;font-weight:500}
 .sv.red{color:var(--accent)}.sv.blue{color:var(--accent2)}
 
-/* 필터 */
 .f-list{display:flex;flex-direction:column;gap:3px}
 .f-item{display:flex;align-items:center;gap:7px;padding:6px 9px;border-radius:5px;cursor:pointer;font-size:12px;border:1px solid transparent;transition:background .15s}
 .f-item:hover{background:var(--surface2)}
@@ -61,10 +58,9 @@ header{background:var(--text);color:#f5f3ee;padding:0 32px;display:flex;align-it
 .fi-source{font-family:var(--mono);font-size:10px;color:var(--accent);margin-bottom:3px}
 .fi-title{font-size:12px;color:var(--text);line-height:1.5;font-weight:700;transition:color .15s}
 .fi-reason{font-size:11px;color:#a03030;margin-top:4px;line-height:1.5}
-.flag-empty{font-size:12px;color:var(--text3);text-align:center;padding:12px 0}
 
 /* 상태바 */
-.status-bar{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:10px 16px;margin-bottom:12px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2)}
+.status-bar{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:10px 16px;margin-bottom:16px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2)}
 .s-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);flex-shrink:0}
 .s-dot.live{background:var(--accent3);animation:blink 2s ease-in-out infinite}
 .s-dot.busy{background:var(--accent);animation:blink .5s ease-in-out infinite}
@@ -75,6 +71,28 @@ header{background:var(--text);color:#f5f3ee;padding:0 32px;display:flex;align-it
 .loading-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:40px;text-align:center;color:var(--text2);display:none}
 .loading-box.show{display:block}
 .loading-icon{font-size:26px;display:inline-block;margin-bottom:8px}
+
+/* 날짜 섹션 헤더 */
+.date-section{margin-bottom:24px}
+.date-header{
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:12px;
+}
+.date-badge{
+  font-family:var(--mono);font-size:11px;font-weight:500;
+  padding:4px 12px;border-radius:4px;white-space:nowrap;
+}
+.date-badge.today{
+  background:var(--text);color:#f5f3ee;
+}
+.date-badge.prev{
+  background:var(--surface2);color:var(--text2);
+  border:1px solid var(--border);
+}
+.date-count{
+  font-family:var(--mono);font-size:10px;color:var(--text3);
+}
+.date-line{flex:1;height:1px;background:var(--border)}
 
 /* 카드 */
 .news-list{display:flex;flex-direction:column;gap:8px}
@@ -130,15 +148,13 @@ header{background:var(--text);color:#f5f3ee;padding:0 32px;display:flex;align-it
 
 <div class="wrap">
   <aside>
-    <!-- 통계 -->
     <div class="panel">
       <div class="pt">현황</div>
       <div class="stat-row"><span class="sn">전체 기사</span><span class="sv" id="s-total">—</span></div>
+      <div class="stat-row"><span class="sn">오늘 기사</span><span class="sv blue" id="s-today">—</span></div>
       <div class="stat-row"><span class="sn">⚠ 사실확인 필요</span><span class="sv red" id="s-flag">—</span></div>
-      <div class="stat-row"><span class="sn">인터넷 매체</span><span class="sv blue" id="s-internet">—</span></div>
     </div>
 
-    <!-- 필터 -->
     <div class="panel">
       <div class="pt">필터</div>
       <div class="f-list">
@@ -150,13 +166,11 @@ header{background:var(--text);color:#f5f3ee;padding:0 32px;display:flex;align-it
       </div>
     </div>
 
-    <!-- 사실확인 필요 기사 목록 -->
     <div class="panel flag-panel" id="flag-panel" style="display:none">
       <div class="pt">⚠ 사실확인 필요</div>
       <div id="flag-list"></div>
     </div>
 
-    <!-- 자동갱신 안내 -->
     <div class="panel">
       <div class="pt">자동 갱신</div>
       <p style="font-size:11px;color:var(--text2);line-height:1.8">
@@ -179,7 +193,7 @@ header{background:var(--text);color:#f5f3ee;padding:0 32px;display:flex;align-it
       <div>뉴스 불러오는 중...</div>
     </div>
 
-    <div class="news-list" id="news-list"></div>
+    <div id="news-container"></div>
     <div class="empty" id="empty">해당하는 기사가 없습니다.</div>
   </main>
 </div>
@@ -194,6 +208,40 @@ function tick(){
     `${n.getMonth()+1}/${n.getDate()}(${d}) ${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
 }
 tick(); setInterval(tick,1000);
+
+// ── 날짜 처리 ────────────────────────────────────────
+function toDateStr(pubDate){
+  // 네이버 API 날짜: "Mon, 23 Mar 2026 09:00:00 +0900" 형식
+  try{
+    const d=new Date(pubDate);
+    if(isNaN(d.getTime()))return null;
+    // 한국 시간 기준 날짜
+    const kst=new Date(d.getTime()+9*60*60*1000);
+    return `${kst.getUTCFullYear()}-${String(kst.getUTCMonth()+1).padStart(2,'0')}-${String(kst.getUTCDate()).padStart(2,'0')}`;
+  }catch{return null;}
+}
+
+function todayStr(){
+  const now=new Date();
+  const kst=new Date(now.getTime()+9*60*60*1000);
+  return `${kst.getUTCFullYear()}-${String(kst.getUTCMonth()+1).padStart(2,'0')}-${String(kst.getUTCDate()).padStart(2,'0')}`;
+}
+
+function fmtDateLabel(dateStr){
+  const [y,m,d]=dateStr.split('-');
+  const date=new Date(`${dateStr}T00:00:00+09:00`);
+  const days=['일','월','화','수','목','금','토'];
+  return `${parseInt(m)}월 ${parseInt(d)}일 (${days[date.getDay()]})`;
+}
+
+function fmtTime(pubDate){
+  try{
+    const d=new Date(pubDate);
+    if(isNaN(d.getTime()))return pubDate||'—';
+    const kst=new Date(d.getTime()+9*60*60*1000);
+    return `${String(kst.getUTCHours()).padStart(2,'0')}:${String(kst.getUTCMinutes()).padStart(2,'0')}`;
+  }catch{return pubDate||'—';}
+}
 
 // ── 오보 패턴 ────────────────────────────────────────
 const FLAG_RE=[
@@ -225,17 +273,7 @@ function relBadge(type,flagged){
 function checkFlag(title,desc){
   const t=title+' '+desc;
   for(const p of FLAG_RE)if(p.re.test(t))return{flagged:true,reason:p.r};
-  // 인터넷 매체 단독 보도는 기본 주의
   return{flagged:false,reason:''};
-}
-function fmtDate(s){
-  try{
-    const d=new Date(s),now=new Date(),diff=Math.floor((now-d)/60000);
-    if(isNaN(diff))return s;
-    if(diff<60)return diff+'분 전';
-    if(diff<1440)return Math.floor(diff/60)+'시간 전';
-    return`${d.getMonth()+1}/${d.getDate()}`;
-  }catch{return s||'—';}
 }
 function strip(s){
   return(s||'').replace(/<[^>]+>/g,'').replace(/&quot;/g,'"').replace(/&amp;/g,'&').replace(/&#039;/g,"'").trim();
@@ -257,7 +295,7 @@ async function fetchNews(){
 
   btn.disabled=true;fi.textContent='⟳';fi.classList.add('spin');
   lb.classList.add('show');
-  document.getElementById('news-list').innerHTML='';
+  document.getElementById('news-container').innerHTML='';
   document.getElementById('empty').classList.remove('show');
   sDot.className='s-dot busy';sMsg.textContent='뉴스 불러오는 중...';
   allNews=[];
@@ -278,21 +316,17 @@ async function fetchNews(){
       const url=it.originallink||it.link||'#';
       const type=srcType(url);
       const {flagged,reason}=checkFlag(title,desc);
+      const dateStr=toDateStr(it.pubDate);
       allNews.push({
         title,
         summary:desc.slice(0,140)+(desc.length>140?'…':''),
         url,source:getDomain(url),
-        time:fmtDate(it.pubDate),
+        time:fmtTime(it.pubDate),
+        pubDate:it.pubDate,
+        dateStr,
         sourceType:type,flagged,flagReason:reason,
         reliability:relBadge(type,flagged),
       });
-    });
-
-    // 정렬: 플래그 → 인터넷 매체 → 나머지
-    allNews.sort((a,b)=>{
-      const sa=(a.flagged?4:0)+(a.sourceType==='internet'?1:0);
-      const sb=(b.flagged?4:0)+(b.sourceType==='internet'?1:0);
-      return sb-sa;
     });
 
     const now=new Date();
@@ -322,14 +356,9 @@ function renderFlagPanel(){
   const panel=document.getElementById('flag-panel');
   const list=document.getElementById('flag-list');
   const flagged=allNews.filter(a=>a.flagged);
-
-  if(!flagged.length){
-    panel.style.display='none';
-    return;
-  }
+  if(!flagged.length){panel.style.display='none';return;}
   panel.style.display='block';
-
-  list.innerHTML=flagged.map((a,i)=>`
+  list.innerHTML=flagged.map(a=>`
     <div class="flag-item" onclick="scrollToCard('${encodeURIComponent(a.title)}')">
       <div class="fi-source">${a.source} · ${a.time}</div>
       <div class="fi-title">${a.title}</div>
@@ -339,26 +368,32 @@ function renderFlagPanel(){
 
 function scrollToCard(encodedTitle){
   const title=decodeURIComponent(encodedTitle);
+  // 전체 필터로 전환 후 스크롤
+  if(currentFilter!=='all'){
+    setFilter('all',document.querySelector('.f-item'));
+    setTimeout(()=>doScroll(title),300);
+  } else {
+    doScroll(title);
+  }
+}
+function doScroll(title){
   const cards=document.querySelectorAll('.news-card');
   for(const card of cards){
-    const t=card.querySelector('.card-title');
-    if(t&&t.textContent.trim()===title){
+    if(card.dataset.title===title){
       card.scrollIntoView({behavior:'smooth',block:'center'});
       card.style.outline='2px solid var(--accent)';
       setTimeout(()=>card.style.outline='',2000);
       return;
     }
   }
-  // 필터가 걸려있으면 전체로 먼저 전환
-  setFilter('all', document.querySelector('.f-item'));
-  setTimeout(()=>scrollToCard(encodedTitle), 300);
 }
 
 // ── 통계 & 필터 ───────────────────────────────────────
 function updateStats(){
+  const today=todayStr();
   document.getElementById('s-total').textContent=allNews.length;
+  document.getElementById('s-today').textContent=allNews.filter(a=>a.dateStr===today).length;
   document.getElementById('s-flag').textContent=allNews.filter(a=>a.flagged).length;
-  document.getElementById('s-internet').textContent=allNews.filter(a=>a.sourceType==='internet').length;
   document.getElementById('fc-all').textContent=allNews.length;
   document.getElementById('fc-major').textContent=allNews.filter(a=>a.sourceType==='major').length;
   document.getElementById('fc-internet').textContent=allNews.filter(a=>a.sourceType==='internet').length;
@@ -374,49 +409,92 @@ function setFilter(f,el){
 
 // ── 렌더링 ───────────────────────────────────────────
 function renderCards(){
-  const list=document.getElementById('news-list');
+  const container=document.getElementById('news-container');
   const empty=document.getElementById('empty');
-  list.innerHTML='';
+  container.innerHTML='';
+
   let filtered=allNews;
-  if(currentFilter==='flagged')filtered=allNews.filter(a=>a.flagged);
-  else if(currentFilter!=='all')filtered=allNews.filter(a=>a.sourceType===currentFilter);
+  if(currentFilter==='flagged') filtered=allNews.filter(a=>a.flagged);
+  else if(currentFilter!=='all') filtered=allNews.filter(a=>a.sourceType===currentFilter);
+
   if(!filtered.length){empty.classList.add('show');return;}
   empty.classList.remove('show');
 
+  const today=todayStr();
+
+  // 날짜별 그룹핑
+  const groups={};
+  filtered.forEach(a=>{
+    const key=a.dateStr||'날짜 미상';
+    if(!groups[key])groups[key]=[];
+    groups[key].push(a);
+  });
+
+  // 날짜 내림차순 정렬
+  const sortedDates=Object.keys(groups).sort((a,b)=>b.localeCompare(a));
+
+  sortedDates.forEach(dateStr=>{
+    const articles=groups[dateStr];
+    // 각 날짜 안에서 플래그 → 나머지 순 정렬
+    articles.sort((a,b)=>(b.flagged?1:0)-(a.flagged?1:0));
+
+    const isToday=dateStr===today;
+    const section=document.createElement('div');
+    section.className='date-section';
+
+    // 날짜 헤더
+    const label=isToday
+      ? `오늘 · ${fmtDateLabel(dateStr)}`
+      : fmtDateLabel(dateStr);
+
+    section.innerHTML=`
+      <div class="date-header">
+        <span class="date-badge ${isToday?'today':'prev'}">${label}</span>
+        <span class="date-count">${articles.length}건</span>
+        <div class="date-line"></div>
+      </div>
+      <div class="news-list" id="list-${dateStr}"></div>
+    `;
+    container.appendChild(section);
+
+    const list=section.querySelector(`#list-${dateStr}`);
+    articles.forEach(a=>list.appendChild(buildCard(a)));
+  });
+}
+
+function buildCard(a){
   const tl={major:'주요 언론',internet:'인터넷 매체',gov:'공식 자료'};
   const rl={high:'신뢰 높음',mid:'보통',low:'확인 필요'};
+  const cls=['news-card',a.flagged?'flagged':''].filter(Boolean).join(' ');
+  const safeUrl=a.url&&a.url!=='#';
+  const urlBar=safeUrl?`
+    <div class="url-bar">
+      <span class="url-label">URL</span>
+      <a class="url-text" href="${a.url}" target="_blank" title="${a.url}">${a.url}</a>
+      <button class="url-copy" onclick="cpUrl(this,'${a.url.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">복사</button>
+    </div>`:'';
+  const flagHtml=a.flagged?`
+    <div class="flag-box">
+      <div class="flag-label">⚠ 사실확인 필요</div>
+      <div class="flag-text">${a.flagReason}</div>
+    </div>`:'';
 
-  filtered.forEach(a=>{
-    const cls=['news-card',a.flagged?'flagged':''].filter(Boolean).join(' ');
-    const safeUrl=a.url&&a.url!=='#';
-    const urlBar=safeUrl?`
-      <div class="url-bar">
-        <span class="url-label">URL</span>
-        <a class="url-text" href="${a.url}" target="_blank" title="${a.url}">${a.url}</a>
-        <button class="url-copy" onclick="cpUrl(this,'${a.url.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">복사</button>
-      </div>`:'';
-    const flagHtml=a.flagged?`
-      <div class="flag-box">
-        <div class="flag-label">⚠ 사실확인 필요</div>
-        <div class="flag-text">${a.flagReason}</div>
-      </div>`:'';
-    const d=document.createElement('div');
-    d.innerHTML=`<div class="${cls}" data-title="${a.title.replace(/"/g,'&quot;')}">
-      <div class="ch">
-        <span class="sb ${a.sourceType}">${tl[a.sourceType]||a.sourceType}</span>
-        <span class="src-name">${a.source}</span>
-        <span class="rel ${a.reliability}">${rl[a.reliability]||''}</span>
-        <span class="src-time">${a.time}</span>
-      </div>
-      <div class="card-title">${a.title}</div>
-      <div class="card-summary">${a.summary}</div>
-      ${urlBar}${flagHtml}
-      <div class="card-footer">
-        ${safeUrl?`<a href="${a.url}" target="_blank" class="orig-btn">원문 보기 →</a>`:''}
-      </div>
-    </div>`;
-    list.appendChild(d.firstElementChild);
-  });
+  const d=document.createElement('div');
+  d.innerHTML=`<div class="${cls}" data-title="${a.title.replace(/"/g,'&quot;')}">
+    <div class="ch">
+      <span class="sb ${a.sourceType}">${tl[a.sourceType]||a.sourceType}</span>
+      <span class="src-name">${a.source}</span>
+      <span class="rel ${a.reliability}">${rl[a.reliability]||''}</span>
+      <span class="src-time">${a.time}</span>
+    </div>
+    <div class="card-title">${a.title}</div>
+    <div class="card-summary">${a.summary}</div>
+    ${urlBar}${flagHtml}
+    <div class="card-footer">
+      ${safeUrl?`<a href="${a.url}" target="_blank" class="orig-btn">원문 보기 →</a>`:''}
+    </div>
+  </div>`;
+  return d.firstElementChild;
 }
 
 function cpUrl(btn,url){
