@@ -286,7 +286,7 @@ async function fetchNews(){
 
   try{
     // 캐시 무력화를 위해 타임스탬프 추가
-    const res=await fetch(CSV_URL+'&t='+Date.now(),{signal:AbortSignal.timeout(15000)});
+    const res=await fetch(CSV_URL+'&t='+Date.now());
     if(!res.ok)throw new Error('fetch 실패');
     const text=await res.text();
     const items=parseCSV(text);
