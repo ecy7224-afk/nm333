@@ -95,10 +95,9 @@ header{background:var(--text);color:#f5f3ee;padding:0 32px;display:flex;align-it
 .card-footer{display:flex;align-items:center;gap:7px}
 .orig-btn{font-size:11px;color:var(--accent2);text-decoration:none;border:1px solid #c0d0e0;padding:3px 9px;border-radius:4px;transition:all .15s}
 .orig-btn:hover{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+.updated-info{font-size:11px;color:var(--text3);margin-top:4px}
 .empty{text-align:center;padding:50px;color:var(--text3);display:none}
 .empty.show{display:block}
-/* 자동갱신 안내 */
-.auto-badge{font-family:var(--mono);font-size:10px;color:var(--accent3);background:#e8f5ee;border:1px solid #b0dfc0;padding:2px 8px;border-radius:10px}
 </style>
 </head>
 <body>
@@ -143,10 +142,13 @@ header{background:var(--text);color:#f5f3ee;padding:0 32px;display:flex;align-it
     </div>
 
     <div class="panel">
-      <div class="pt">자동 갱신</div>
-      <p style="font-size:11px;color:var(--text2);line-height:1.7">
-        Apps Script에서 트리거를 설정하면 뉴스가 <b>매시간 자동 수집</b>돼요.<br><br>
-        Apps Script → 왼쪽 ⏰ 트리거 → 추가 → fetchAndSave → 시간 기반 → 1시간마다
+      <div class="pt">자동 갱신 설정</div>
+      <p style="font-size:11px;color:var(--text2);line-height:1.8">
+        Apps Script → 왼쪽 메뉴 ⏰ <b>트리거</b><br>
+        → 트리거 추가<br>
+        → 함수: <b>fetchAndSave</b><br>
+        → 시간 기반 → <b>1시간마다</b><br><br>
+        설정하면 버튼 없이 자동 수집돼요!
       </p>
     </div>
   </aside>
@@ -160,7 +162,7 @@ header{background:var(--text);color:#f5f3ee;padding:0 32px;display:flex;align-it
 
     <div class="loading-box" id="loading-box">
       <div class="loading-icon spin">⟳</div>
-      <div id="loading-msg">구글 시트에서 뉴스 불러오는 중...</div>
+      <div>뉴스 불러오는 중...</div>
     </div>
 
     <div class="news-list" id="news-list"></div>
@@ -169,8 +171,8 @@ header{background:var(--text);color:#f5f3ee;padding:0 32px;display:flex;align-it
 </div>
 
 <script>
-// ── 구글 시트 CSV URL ─────────────────────────────────
-const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS72dCbTI4uiwX71Yp3tnYZw_LcCy_I_kv1_fuXBSSpi0za4Xu3W1CzFfqJvWG2BYXtqBQittDYvwb_/pub?gid=0&single=true&output=csv';
+// ── GitHub Raw JSON URL ───────────────────────────────
+const JSON_URL = 'https://raw.githubusercontent.com/ecy7224-afk/nm333/main/news.json';
 
 // ── 시계 ─────────────────────────────────────────────
 function tick(){
@@ -210,7 +212,6 @@ const MAJOR=[
   'news1.kr','newsis.com','seoul.co.kr','munhwa.com','kmib.co.kr',
   'heraldcorp.com','fnnews.com','edaily.co.kr','inews24.com','etnews.com'
 ];
-
 function srcType(url){
   const c=url.toLowerCase();
   if(c.includes('nts.go.kr')||c.includes('moef.go.kr')||c.includes('.go.kr'))return'gov';
@@ -239,31 +240,8 @@ function fmtDate(s){
 function strip(s){
   return(s||'').replace(/<[^>]+>/g,'').replace(/&quot;/g,'"').replace(/&amp;/g,'&').replace(/&#039;/g,"'").trim();
 }
-
-// ── CSV 파싱 ─────────────────────────────────────────
-function parseCSV(text){
-  const lines=text.trim().split('\n');
-  if(lines.length<2)return[];
-  // 헤더: title,link,originallink,description,pubDate
-  return lines.slice(1).map(line=>{
-    // CSV 필드 파싱 (따옴표 처리)
-    const fields=[];
-    let cur='',inQ=false;
-    for(let i=0;i<line.length;i++){
-      const c=line[i];
-      if(c==='"'){ inQ=!inQ; }
-      else if(c===','&&!inQ){ fields.push(cur);cur=''; }
-      else { cur+=c; }
-    }
-    fields.push(cur);
-    return{
-      title:fields[0]||'',
-      link:fields[1]||'#',
-      originallink:fields[2]||fields[1]||'#',
-      description:fields[3]||'',
-      pubDate:fields[4]||''
-    };
-  }).filter(it=>it.title);
+function getDomain(url){
+  try{return new URL(url).hostname.replace('www.','');}catch{return'—';}
 }
 
 // ── 뉴스 가져오기 ────────────────────────────────────
@@ -281,32 +259,30 @@ async function fetchNews(){
   lb.classList.add('show');
   document.getElementById('news-list').innerHTML='';
   document.getElementById('empty').classList.remove('show');
-  sDot.className='s-dot busy';sMsg.textContent='구글 시트에서 뉴스 불러오는 중...';
+  sDot.className='s-dot busy';sMsg.textContent='뉴스 불러오는 중...';
   allNews=[];
 
   try{
-    // 캐시 무력화를 위해 타임스탬프 추가
-    const res=await fetch(CSV_URL+'&t='+Date.now());
-    if(!res.ok)throw new Error('fetch 실패');
-    const text=await res.text();
-    const items=parseCSV(text);
+    // 캐시 무력화
+    const res=await fetch(JSON_URL+'?t='+Date.now());
+    if(!res.ok)throw new Error('fetch 실패 '+res.status);
+    const data=await res.json();
+    const items=data.items||[];
+    const updated=data.updated?new Date(data.updated):null;
 
-    if(!items.length)throw new Error('데이터 없음');
-
-    // 중복 제거 및 분석
     const seen=new Set();
     items.forEach(it=>{
-      const title=strip(it.title);
+      const title=strip(it.title||'');
       if(!title||seen.has(title))return;
       seen.add(title);
-      const desc=strip(it.description);
+      const desc=strip(it.description||'');
       const url=it.originallink||it.link||'#';
       const type=srcType(url);
       const {flagged,reason}=checkFlag(title,desc);
       allNews.push({
         title,
         summary:desc.slice(0,140)+(desc.length>140?'…':''),
-        url,source:url==='#'?'—':(()=>{try{return new URL(url).hostname.replace('www.','');}catch{return'—';}})(),
+        url,source:getDomain(url),
         time:fmtDate(it.pubDate),
         sourceType:type,flagged,flagReason:reason,
         reliability:relBadge(type,flagged),
@@ -314,7 +290,6 @@ async function fetchNews(){
       });
     });
 
-    // 정렬: 플래그 → 키워드 → 나머지
     allNews.sort((a,b)=>{
       const sa=(a.flagged?4:0)+(a.matchedKw.length?2:0);
       const sb=(b.flagged?4:0)+(b.matchedKw.length?2:0);
@@ -325,7 +300,10 @@ async function fetchNews(){
     sDot.className='s-dot live';
     sMsg.textContent=`${allNews.length}개 기사 로드 완료`;
     document.getElementById('s-time').textContent=
-      `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')} 기준`;
+      updated
+        ? `수집: ${updated.getMonth()+1}/${updated.getDate()} ${String(updated.getHours()).padStart(2,'0')}:${String(updated.getMinutes()).padStart(2,'0')}`
+        : `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')} 기준`;
+
     updateStats();renderCards();
 
   }catch(e){
