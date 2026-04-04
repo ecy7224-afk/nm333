@@ -232,18 +232,10 @@ function fmtTime(pubDate){
 
 // ── 오보 패턴 (단독 강화) ────────────────────────────
 const FLAG_RE=[
-  // 단독 표현 — 다양한 형태 모두 포착
-  {re:/[\[\(<【]?\s*단독\s*[\]\)>】]?/,r:'단독 보도 — 타 언론사 교차 확인이 필요합니다'},
-  // 극단적 표현
-  {re:/전면\s*(중단|폐지|금지)/,r:'극단적 표현 — 공식 발표 없이 "전면 중단/폐지" 표현 사용'},
-  // 충격성 단독
-  {re:/단독.{0,15}(폭로|충격|경악|입수)/,r:'단독+충격성 — 교차 검증이 필요한 단독 보도'},
-  // 불확실한 수치
-  {re:/수천\s*명|수만\s*명|수백\s*억|수천\s*억/,r:'불확실한 수치 — 구체적 근거 없는 대규모 수치 사용'},
-  // 기관 폐지
-  {re:/국세청\s*(해체|폐지|통폐합)/,r:'기관 폐지 — 공식 발표 없는 기관 개편 보도'},
-  // 익명 출처
-  {re:/비밀리에|몰래|은밀히/,r:'익명/비공개 출처 — 공식 확인이 어려운 표현 사용'},
+  {re:/전면\s*(중단|폐지|금지)/,r:'극단적 표현 — 공식 발표 없이 "전면 중단/폐지" 표현 사용',dandok:false},
+  {re:/수천\s*명|수만\s*명|수백\s*억|수천\s*억/,r:'불확실한 수치 — 구체적 근거 없는 대규모 수치 사용',dandok:false},
+  {re:/국세청\s*(해체|폐지|통폐합)/,r:'기관 폐지 — 공식 발표 없는 기관 개편 보도',dandk:false},
+  {re:/비밀리에|몰래|은밀히/,r:'익명/비공개 출처 — 공식 확인이 어려운 표현 사용',dandk:false},
 ];
 
 // 단독 패턴은 인터넷 매체에서만 플래그 (주요 언론사 단독은 정상 보도)
@@ -267,15 +259,28 @@ function relBadge(type,flagged){
 }
 function checkFlag(title,desc,type){
   const t=title+' '+desc;
+  // 단독 패턴 — 인터넷 매체만 플래그 (별도 처리)
+  if(type==='internet'){
+    // [단독], <단독>, (단독), 단독, 【단독】 등 모든 형태
+    if(/단독/.test(t)){
+      return{flagged:true,reason:'단독 보도 — 타 언론사 교차 확인이 필요합니다'};
+    }
+  }
   for(const p of FLAG_RE){
-    // 단독 패턴은 인터넷 매체만 플래그
-    if(p.re.source.includes('단독')&&type!=='internet') continue;
     if(p.re.test(t))return{flagged:true,reason:p.r};
   }
   return{flagged:false,reason:''};
 }
 function strip(s){
-  return(s||'').replace(/<[^>]+>/g,'').replace(/&quot;/g,'"').replace(/&amp;/g,'&').replace(/&#039;/g,"'").trim();
+  return(s||'')
+    .replace(/<[^>]+>/g,'')
+    .replace(/&quot;/g,'"')
+    .replace(/&amp;/g,'&')
+    .replace(/&#039;/g,"'")
+    .replace(/&lt;/g,'<')
+    .replace(/&gt;/g,'>')
+    .replace(/&nbsp;/g,' ')
+    .trim();
 }
 function getDomain(url){
   try{return new URL(url).hostname.replace('www.','');}catch{return'—';}
